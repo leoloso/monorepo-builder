@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 use Symfony\Component\Console\Application;
+use Symfony\Component\DependencyInjection\Exception\ServiceNotFoundException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symplify\MonorepoBuilder\Command\BumpInterdependencyCommand;
 use Symplify\MonorepoBuilder\Command\PackageAliasCommand;
@@ -15,7 +17,6 @@ use Symplify\MonorepoBuilder\Release\Command\ReleaseCommand;
 use Symplify\MonorepoBuilder\Testing\Command\LocalizeComposerPathsCommand;
 use Symplify\PackageBuilder\Reflection\PrivatesCaller;
 use Symplify\PackageBuilder\Yaml\ParametersMerger;
-use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services();
@@ -29,7 +30,23 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->exclude([__DIR__ . '/../src/Exception', __DIR__ . '/../src/Kernel', __DIR__ . '/../src/ValueObject']);
 
     // console
-    $services->set(Application::class)
+    /**
+     * leoloso/symplify fork customization!
+     *
+     * Enable to add more commands to the Application service,
+     * by allowing the custom monorepo-builder.php to set the
+     * Application first, and add its own commands.
+     *
+     * If Application has already been set, use it.
+     * Otherwise, create the service.
+     */
+    try {
+        $applicationService = $services->get(Application::class);
+    } catch (ServiceNotFoundException) {
+        $applicationService = $services->set(Application::class);
+    }
+    // $services->set(Application::class)
+    $applicationService
         ->call('addCommands', [[
             service(BumpInterdependencyCommand::class),
             service(InitCommand::class),
