@@ -10,7 +10,7 @@ use Symplify\MonorepoBuilder\DevMasterAliasUpdater;
 use Symplify\MonorepoBuilder\Finder\PackageComposerFinder;
 use Symplify\MonorepoBuilder\Git\ExpectedAliasResolver;
 use Symplify\PackageBuilder\Console\Command\AbstractSymplifyCommand;
-use Symplify\PackageBuilder\Console\ShellCode;
+use Symplify\PackageBuilder\Console\Command\CommandNaming;
 
 final class PackageAliasCommand extends AbstractSymplifyCommand
 {
@@ -24,6 +24,7 @@ final class PackageAliasCommand extends AbstractSymplifyCommand
 
     protected function configure(): void
     {
+        $this->setName(CommandNaming::classToName(self::class));
         $this->setDescription('Updates branch alias in "composer.json" all found packages');
     }
 
@@ -32,7 +33,7 @@ final class PackageAliasCommand extends AbstractSymplifyCommand
         $composerPackageFiles = $this->packageComposerFinder->getPackageComposerFiles();
         if ($composerPackageFiles === []) {
             $this->symfonyStyle->error('No "composer.json" were found in packages.');
-            return ShellCode::ERROR;
+            return self::FAILURE;
         }
 
         $expectedAlias = $this->expectedAliasResolver->resolve();
@@ -42,6 +43,6 @@ final class PackageAliasCommand extends AbstractSymplifyCommand
         $message = sprintf('Alias was updated to "%s" in all packages.', $expectedAlias);
         $this->symfonyStyle->success($message);
 
-        return ShellCode::SUCCESS;
+        return self::SUCCESS;
     }
 }

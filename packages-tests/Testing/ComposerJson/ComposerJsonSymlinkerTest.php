@@ -6,7 +6,7 @@ namespace Symplify\MonorepoBuilder\Tests\Testing\ComposerJson;
 
 use Iterator;
 use Nette\Utils\Json;
-use Symplify\MonorepoBuilder\HttpKernel\MonorepoBuilderKernel;
+use Symplify\MonorepoBuilder\Kernel\MonorepoBuilderKernel;
 use Symplify\MonorepoBuilder\Testing\ComposerJson\ComposerJsonSymlinker;
 use Symplify\PackageBuilder\Testing\AbstractKernelTestCase;
 use Symplify\SmartFileSystem\SmartFileInfo;
@@ -17,7 +17,7 @@ final class ComposerJsonSymlinkerTest extends AbstractKernelTestCase
 
     protected function setUp(): void
     {
-        $this->bootKernel(MonorepoBuilderKernel::class);
+        $this->bootKernelWithConfigs(MonorepoBuilderKernel::class, [__DIR__ . '/config/test_config.php']);
 
         $this->composerJsonSymlinker = $this->getService(ComposerJsonSymlinker::class);
     }
@@ -45,6 +45,9 @@ final class ComposerJsonSymlinkerTest extends AbstractKernelTestCase
         $this->assertJsonStringEqualsJsonFile($expectedJsonFile, $jsonString);
     }
 
+    /**
+     * @return Iterator<string[]|bool[]>
+     */
     public function provideData(): Iterator
     {
         yield [

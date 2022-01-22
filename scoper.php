@@ -36,6 +36,8 @@ return [
         'Symplify\MonorepoBuilder\*',
         // part of public API in \Symplify\MonorepoBuilder\Release\Contract\ReleaseWorker\ReleaseWorkerInterface
         'PharIo\Version\*',
+        // needed by the monorepo-builder command (avoid failing with a "class not found" error)
+        'Symplify\ComposerJsonManipulator\ValueObject\ComposerJsonSection',
     ],
     'patchers' => [
         // unprefix polyfill functions
@@ -63,11 +65,6 @@ return [
                 $content,
                 '#load\(\'Symplify\\\\\\\\(?<package_name>[A-Za-z]+)#',
                 function (array $match) use ($prefix) {
-                    if (in_array($match['package_name'], ['CodingStandard', 'EasyCodingStandard'], true)) {
-                        // skip
-                        return $match[0];
-                    }
-
                     return 'load(\'' . $prefix . '\Symplify\\' . $match['package_name'];
                 }
             );

@@ -7,6 +7,7 @@ namespace Symplify\MonorepoBuilder\Merge\ComposerJsonDecorator;
 use Symplify\ComposerJsonManipulator\ValueObject\ComposerJson;
 use Symplify\MonorepoBuilder\Merge\Configuration\ModifyingComposerJsonProvider;
 use Symplify\MonorepoBuilder\Merge\Contract\ComposerJsonDecoratorInterface;
+use Symplify\MonorepoBuilder\ValueObject\Option;
 
 /**
  * @see \Symplify\MonorepoBuilder\Tests\Merge\ComposerJsonDecorator\RemoverComposerJsonDecoratorTest
@@ -79,8 +80,8 @@ final class RemoverComposerJsonDecorator implements ComposerJsonDecoratorInterfa
                 continue;
             }
 
-            $autoloadListKeys = array_keys($autoloadList);
-            foreach ($autoloadListKeys as $namespace) {
+            $namespaces = array_keys($autoloadList);
+            foreach ($namespaces as $namespace) {
                 unset($currentAutoload[$type][$namespace]);
             }
         }
@@ -101,8 +102,8 @@ final class RemoverComposerJsonDecorator implements ComposerJsonDecoratorInterfa
                 continue;
             }
 
-            $autoloadListKeys = array_keys($autoloadList);
-            foreach ($autoloadListKeys as $namespace) {
+            $namespaces = array_keys($autoloadList);
+            foreach ($namespaces as $namespace) {
                 unset($currentAutoloadDev[$type][$namespace]);
             }
         }
@@ -119,5 +120,15 @@ final class RemoverComposerJsonDecorator implements ComposerJsonDecoratorInterfa
         if ($removingComposerJson->getPreferStable()) {
             $composerJson->removePreferStable();
         }
+
+        if (count($removingComposerJson->getRepositories()) !== 1) {
+            return;
+        }
+
+        if ($removingComposerJson->getRepositories()[0] !== Option::REMOVE_COMPLETELY) {
+            return;
+        }
+
+        $composerJson->setRepositories([]);
     }
 }

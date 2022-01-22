@@ -18,7 +18,7 @@ use Symplify\MonorepoBuilder\Validator\SourcesPresenceValidator;
 use Symplify\MonorepoBuilder\ValueObject\File;
 use Symplify\MonorepoBuilder\ValueObject\Option;
 use Symplify\PackageBuilder\Console\Command\AbstractSymplifyCommand;
-use Symplify\PackageBuilder\Console\ShellCode;
+use Symplify\PackageBuilder\Console\Command\CommandNaming;
 
 final class ReleaseCommand extends AbstractSymplifyCommand
 {
@@ -34,6 +34,7 @@ final class ReleaseCommand extends AbstractSymplifyCommand
 
     protected function configure(): void
     {
+        $this->setName(CommandNaming::classToName(self::class));
         $this->setDescription('Perform release process with set Release Workers.');
 
         $description = sprintf(
@@ -59,23 +60,23 @@ final class ReleaseCommand extends AbstractSymplifyCommand
         // validation phase
         $stage = $this->stageResolver->resolveFromInput($input);
 
-        $activeReleaseWorkers = $this->releaseWorkerProvider->provideByStage($stage);
-        if ($activeReleaseWorkers === []) {
+        $releaseWorkers = $this->releaseWorkerProvider->provideByStage($stage);
+        if ($releaseWorkers === []) {
             $errorMessage = sprintf(
                 'There are no release workers registered. Be sure to add them to "%s"',
                 File::CONFIG
             );
             $this->symfonyStyle->error($errorMessage);
 
-            return ShellCode::ERROR;
+            return self::FAILURE;
         }
 
-        $totalWorkerCount = count($activeReleaseWorkers);
+        $totalWorkerCount = count($releaseWorkers);
         $i = 0;
         $isDryRun = (bool) $input->getOption(Option::DRY_RUN);
         $version = $this->versionResolver->resolveVersion($input, $stage);
 
-        foreach ($activeReleaseWorkers as $releaseWorker) {
+        foreach ($releaseWorkers as $releaseWorker) {
             $title = sprintf('%d/%d) ', ++$i, $totalWorkerCount) . $releaseWorker->getDescription($version);
             $this->symfonyStyle->title($title);
             $this->releaseWorkerReporter->printMetadata($releaseWorker);
@@ -99,6 +100,6 @@ final class ReleaseCommand extends AbstractSymplifyCommand
             $this->symfonyStyle->success($finishedMessage);
         }
 
-        return ShellCode::SUCCESS;
+        return self::SUCCESS;
     }
 }

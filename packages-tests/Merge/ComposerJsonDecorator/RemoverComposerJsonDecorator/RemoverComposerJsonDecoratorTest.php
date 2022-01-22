@@ -7,7 +7,7 @@ namespace Symplify\MonorepoBuilder\Tests\Merge\ComposerJsonDecorator\RemoverComp
 use Symplify\ComposerJsonManipulator\ComposerJsonFactory;
 use Symplify\ComposerJsonManipulator\ValueObject\ComposerJson;
 use Symplify\ComposerJsonManipulator\ValueObject\ComposerJsonSection;
-use Symplify\MonorepoBuilder\HttpKernel\MonorepoBuilderKernel;
+use Symplify\MonorepoBuilder\Kernel\MonorepoBuilderKernel;
 use Symplify\MonorepoBuilder\Merge\ComposerJsonDecorator\RemoverComposerJsonDecorator;
 use Symplify\MonorepoBuilder\Tests\Merge\ComposerJsonDecorator\AbstractComposerJsonDecoratorTest;
 use Symplify\MonorepoBuilder\ValueObject\Option;
@@ -29,6 +29,12 @@ final class RemoverComposerJsonDecoratorTest extends AbstractComposerJsonDecorat
                 'Symplify\SuperTests\\' => 'super-tests',
             ],
             'files' => ['src/SomeFile.php', 'src/KeepFile.php'],
+        ],
+        ComposerJsonSection::REPOSITORIES => [
+            [
+                'type' => 'git',
+                'url' => '',
+            ],
         ],
     ];
 
@@ -54,6 +60,7 @@ final class RemoverComposerJsonDecoratorTest extends AbstractComposerJsonDecorat
                 ],
                 'files' => ['src/SomeFile.php'],
             ],
+            ComposerJsonSection::REPOSITORIES => [Option::REMOVE_COMPLETELY],
         ]);
 
         $this->removerComposerJsonDecorator = $this->getService(RemoverComposerJsonDecorator::class);

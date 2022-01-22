@@ -6,6 +6,6 @@ namespace Symplify\MonorepoBuilder\Exception;
 
 use Exception;
 
-final class AmbiguousVersionException extends Exception
+final class ConfigurationException extends Exception
 {
 }
