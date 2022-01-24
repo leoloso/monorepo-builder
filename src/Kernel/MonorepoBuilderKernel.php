@@ -18,19 +18,7 @@ final class MonorepoBuilderKernel extends AbstractSymplifyKernel
      */
     public function createFromConfigs(array $configFiles): ContainerInterface
     {
-        /**
-         * leoloso/symplify fork customization!
-         *
-         * Enable to add more commands to the Application service,
-         * by defining the custom monorepo-builder.php after
-         * the default config, not before.
-         *
-         * Original code:
-         *
-         *   $configFiles[] = __DIR__ . '/../../config/config.php';
-         */
-        array_unshift($configFiles, __DIR__ . '/../../config/config.php');
-        
+        $configFiles[] = __DIR__ . '/../../config/config.php';
         $configFiles[] = ComposerJsonManipulatorConfig::FILE_PATH;
         $configFiles[] = ConsoleColorDiffConfig::FILE_PATH;
 
