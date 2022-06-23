@@ -61,7 +61,6 @@ abstract class AbstractComposerJsonDecoratorTest extends AbstractKernelTestCase
         $this->assertSame($firstComposerJson->getRepositories(), $secondComposerJson->getRepositories());
 
         $this->assertSame($firstComposerJson->getReplace(), $secondComposerJson->getReplace());
-        $this->assertSame($firstComposerJson->getProvide(), $secondComposerJson->getProvide());
         $this->assertSame($firstComposerJson->getExtra(), $secondComposerJson->getExtra());
         $this->assertSame($firstComposerJson->getConfig(), $secondComposerJson->getConfig());
 

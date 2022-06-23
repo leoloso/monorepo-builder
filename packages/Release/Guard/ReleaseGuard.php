@@ -110,18 +110,18 @@ final class ReleaseGuard
 
     private function ensureVersionIsNewerThanLastOne(Version $version): void
     {
-        $mostRecentVersionString = $this->tagResolver->resolve(getcwd());
+        $mostRecentVersion = $this->tagResolver->resolve(getcwd());
 
         // no tag yet
-        if ($mostRecentVersionString === null) {
+        if ($mostRecentVersion === null) {
             return;
         }
 
         // normalize to workaround phar-io bug
-        $mostRecentVersionString = strtolower($mostRecentVersionString);
+        $mostRecentVersion = strtolower($mostRecentVersion);
 
         // validation
-        $mostRecentVersion = new Version($mostRecentVersionString);
+        $mostRecentVersion = new Version($mostRecentVersion);
         if ($version->isGreaterThan($mostRecentVersion)) {
             return;
         }
