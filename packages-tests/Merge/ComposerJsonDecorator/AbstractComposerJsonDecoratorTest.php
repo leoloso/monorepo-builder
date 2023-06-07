@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Symplify\MonorepoBuilder\Tests\Merge\ComposerJsonDecorator;
 
-use Symplify\ComposerJsonManipulator\ComposerJsonFactory;
-use Symplify\ComposerJsonManipulator\ValueObject\ComposerJson;
 use Symplify\EasyTesting\FixtureSplitter\TrioFixtureSplitter;
+use Symplify\MonorepoBuilder\ComposerJsonManipulator\ComposerJsonFactory;
+use Symplify\MonorepoBuilder\ComposerJsonManipulator\ValueObject\ComposerJson;
 use Symplify\MonorepoBuilder\Kernel\MonorepoBuilderKernel;
 use Symplify\PackageBuilder\Testing\AbstractKernelTestCase;
 use Symplify\SmartFileSystem\SmartFileInfo;
@@ -61,6 +61,7 @@ abstract class AbstractComposerJsonDecoratorTest extends AbstractKernelTestCase
         $this->assertSame($firstComposerJson->getRepositories(), $secondComposerJson->getRepositories());
 
         $this->assertSame($firstComposerJson->getReplace(), $secondComposerJson->getReplace());
+        $this->assertSame($firstComposerJson->getProvide(), $secondComposerJson->getProvide());
         $this->assertSame($firstComposerJson->getExtra(), $secondComposerJson->getExtra());
         $this->assertSame($firstComposerJson->getConfig(), $secondComposerJson->getConfig());
 

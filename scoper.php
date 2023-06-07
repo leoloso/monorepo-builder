@@ -2,54 +2,60 @@
 
 declare(strict_types=1);
 
-use Nette\Utils\Strings;
+use Isolated\Symfony\Component\Finder\Finder;
 
 require __DIR__ . '/vendor/autoload.php';
 
-/**
- * @see https://regex101.com/r/LMDq0p/1
- * @var string
- */
-const POLYFILL_FILE_NAME_REGEX = '#vendor\/symfony\/polyfill\-(.*)\/bootstrap(.*?)\.php#';
+$timestamp = (new DateTime('now'))->format('Ym');
 
-/**
- * @see https://regex101.com/r/RBZ0bN/1
- * @var string
- */
-const POLYFILL_STUBS_NAME_REGEX = '#vendor\/symfony\/polyfill\-(.*)\/Resources\/stubs#';
+// @see https://github.com/humbug/php-scoper/blob/master/docs/further-reading.md
+use Nette\Utils\Strings;
 
-$timestamp = (new DateTime('now'))->format('Ymd');
+$polyfillsBootstraps = array_map(
+    static fn (SplFileInfo $fileInfo) => $fileInfo->getPathname(),
+    iterator_to_array(
+        Finder::create()
+            ->files()
+            ->in(__DIR__ . '/vendor/symfony/polyfill-*')
+            ->name('bootstrap*.php'),
+        false,
+    ),
+);
+
+$polyfillsStubs = array_map(
+    static fn (SplFileInfo $fileInfo) => $fileInfo->getPathname(),
+    iterator_to_array(
+        Finder::create()
+            ->files()
+            ->in(__DIR__ . '/vendor/symfony/polyfill-*/Resources/stubs')
+            ->name('*.php'),
+        false,
+    ),
+);
 
 // see https://github.com/humbug/php-scoper
 return [
     'prefix' => 'MonorepoBuilder' . $timestamp,
-    'files-whitelist' => [
-        // do not prefix "trigger_deprecation" from symfony - https://github.com/symfony/symfony/commit/0032b2a2893d3be592d4312b7b098fb9d71aca03
+    'exclude-files' => [
         // these paths are relative to this file location, so it should be in the root directory
         'vendor/symfony/deprecation-contracts/function.php',
-        // for package versions - https://github.com/symplify/easy-coding-standard-prefixed/runs/2176047833
+        ...$polyfillsBootstraps,
+        ...$polyfillsStubs,
     ],
-    'whitelist' => [
-        // part of public interface of configs.php
-        'Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator',
-        // needed for autoload, that is not prefixed, since it's in bin/* file
-        'Symplify\MonorepoBuilder\*',
+    'exclude-namespaces' => [
+        '#^Symplify\\\\MonorepoBuilder#',
+        '#^Symfony\\\\Polyfill#',
         // part of public API in \Symplify\MonorepoBuilder\Release\Contract\ReleaseWorker\ReleaseWorkerInterface
-        'PharIo\Version\*',
-        // needed by the monorepo-builder command (avoid failing with a "class not found" error)
-        'Symplify\ComposerJsonManipulator\ValueObject\ComposerJsonSection',
+        '#^PharIo\\\\Version#',
+    ],
+    'exclude-constants' => ['#^SYMFONY\_[\p{L}_]+$#'],
+    'expose-classes' => [
+        'Normalizer',
+        // part of public interface of configs.php
+        'Symplify\MonorepoBuilder\ComposerJsonManipulator\ValueObject\ComposerJsonSection',
+        'Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator',
     ],
     'patchers' => [
-        // unprefix polyfill functions
-        // @see https://github.com/humbug/php-scoper/issues/440#issuecomment-795160132
-        function (string $filePath, string $prefix, string $content): string {
-            if (! Strings::match($filePath, POLYFILL_FILE_NAME_REGEX)) {
-                return $content;
-            }
-
-            return Strings::replace($content, '#namespace ' . $prefix . ';#', '');
-        },
-
         // scope symfony configs
         function (string $filePath, string $prefix, string $content): string {
             if (! Strings::match($filePath, '#(packages|config|services)\.php$#')) {
@@ -68,39 +74,6 @@ return [
             return $content;
         },
 
-        // remove namespace frompoly fill stubs
-        function (string $filePath, string $prefix, string $content): string {
-            if (! Strings::match($filePath, POLYFILL_STUBS_NAME_REGEX)) {
-                return $content;
-            }
-
-            // remove alias to class have original PHP names - fix in
-            $content = Strings::replace($content, '#\\\\class_alias(.*?);#', '');
-
-            return Strings::replace($content, '#namespace ' . $prefix . ';#', '');
-        },
-
-        // fixes https://github.com/symplify/symplify/issues/3102
-        function (string $filePath, string $prefix, string $content): string {
-            if (! Strings::contains($filePath, 'vendor/')) {
-                return $content;
-            }
-
-            // @see https://regex101.com/r/lBV8IO/2
-            $fqcnReservedPattern = sprintf('#(\\\\)?%s\\\\(parent|self|static)#m', $prefix);
-            $matches = Strings::matchAll($content, $fqcnReservedPattern);
-
-            if (! $matches) {
-                return $content;
-            }
-
-            foreach ($matches as $match) {
-                $content = str_replace($match[0], $match[2], $content);
-            }
-
-            return $content;
-        },
-
         // scope symfony configs
         function (string $filePath, string $prefix, string $content): string {
             if (! Strings::match($filePath, '#(packages|config|services)\.php$#')) {
@@ -112,24 +85,6 @@ return [
                 $content,
                 '#load\(\'' . $prefix . '\\\\Symplify\\\\MonorepoBuilder#',
                 'load(\'' . 'Symplify\\MonorepoBuilder',
-            );
-        },
-
-        // unprefixed ContainerConfigurator
-        function (string $filePath, string $prefix, string $content): string {
-            // keep vendor prefixed the prefixed file loading; not part of public API
-            // except @see https://github.com/symfony/symfony/commit/460b46f7302ec7319b8334a43809523363bfef39#diff-1cd56b329433fc34d950d6eeab9600752aa84a76cbe0693d3fab57fed0f547d3R110
-            if (str_contains($filePath, 'vendor/symfony') && ! str_ends_with(
-                $filePath,
-                'vendor/symfony/dependency-injection/Loader/PhpFileLoader.php'
-            )) {
-                return $content;
-            }
-
-            return Strings::replace(
-                $content,
-                '#' . $prefix . '\\\\Symfony\\\\Component\\\\DependencyInjection\\\\Loader\\\\Configurator\\\\ContainerConfigurator#',
-                'Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator'
             );
         },
     ],

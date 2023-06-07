@@ -6,14 +6,14 @@ namespace Symplify\MonorepoBuilder\Merge\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symplify\ComposerJsonManipulator\ComposerJsonFactory;
-use Symplify\ComposerJsonManipulator\FileSystem\JsonFileManager;
+use Symplify\MonorepoBuilder\ComposerJsonManipulator\ComposerJsonFactory;
+use Symplify\MonorepoBuilder\ComposerJsonManipulator\FileSystem\JsonFileManager;
+use Symplify\MonorepoBuilder\ComposerJsonManipulator\ValueObject\ComposerJson;
 use Symplify\MonorepoBuilder\FileSystem\ComposerJsonProvider;
 use Symplify\MonorepoBuilder\Merge\Application\MergedAndDecoratedComposerJsonFactory;
 use Symplify\MonorepoBuilder\Merge\Guard\ConflictingVersionsGuard;
 use Symplify\MonorepoBuilder\Validator\SourcesPresenceValidator;
 use Symplify\PackageBuilder\Console\Command\AbstractSymplifyCommand;
-use Symplify\PackageBuilder\Console\Command\CommandNaming;
 
 final class MergeCommand extends AbstractSymplifyCommand
 {
@@ -30,7 +30,7 @@ final class MergeCommand extends AbstractSymplifyCommand
 
     protected function configure(): void
     {
-        $this->setName(CommandNaming::classToName(self::class));
+        $this->setName('merge');
 
         $this->setDescription('Merge "composer.json" from all found packages to root one');
     }
@@ -41,18 +41,27 @@ final class MergeCommand extends AbstractSymplifyCommand
 
         $this->conflictingVersionsGuard->ensureNoConflictingPackageVersions();
 
-        $mainComposerJsonFilePath = getcwd() . '/composer.json';
-        $mainComposerJson = $this->composerJsonFactory->createFromFilePath($mainComposerJsonFilePath);
+        $rootComposerJsonFilePath = getcwd() . '/composer.json';
+        $rootComposerJson = $this->getRootComposerJson($rootComposerJsonFilePath);
         $packageFileInfos = $this->composerJsonProvider->getPackagesComposerFileInfos();
 
         $this->mergedAndDecoratedComposerJsonFactory->createFromRootConfigAndPackageFileInfos(
-            $mainComposerJson,
+            $rootComposerJson,
             $packageFileInfos
         );
 
-        $this->jsonFileManager->printComposerJsonToFilePath($mainComposerJson, $mainComposerJsonFilePath);
-        $this->symfonyStyle->success('Main "composer.json" was updated.');
+        $this->jsonFileManager->printComposerJsonToFilePath($rootComposerJson, $rootComposerJsonFilePath);
+        $this->symfonyStyle->success('Root "composer.json" was updated.');
 
         return self::SUCCESS;
+    }
+
+    private function getRootComposerJson(string $rootComposerJsonFilePath): ComposerJson
+    {
+        $rootComposerJson = $this->composerJsonFactory->createFromFilePath($rootComposerJsonFilePath);
+        // ignore "provide" section in current root composer.json
+        $rootComposerJson->setProvide([]);
+
+        return $rootComposerJson;
     }
 }
