@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Symplify\MonorepoBuilder;
 
-use Symplify\MonorepoBuilder\ComposerJsonManipulator\FileSystem\JsonFileManager;
-use Symplify\MonorepoBuilder\ComposerJsonManipulator\ValueObject\ComposerJsonSection;
+use Symplify\ComposerJsonManipulator\FileSystem\JsonFileManager;
+use Symplify\ComposerJsonManipulator\ValueObject\ComposerJsonSection;
 use Symplify\SmartFileSystem\SmartFileInfo;
 
 final class DependencyUpdater
@@ -56,7 +56,6 @@ final class DependencyUpdater
     /**
      * @param mixed[] $json
      * @param string[] $parentPackageNames
-     * @param ComposerJsonSection::* $section
      * @return mixed[]
      */
     private function processSectionWithPackages(
@@ -83,7 +82,6 @@ final class DependencyUpdater
 
     /**
      * @param mixed[] $json
-     * @param ComposerJsonSection::* $section
      * @return mixed[]
      */
     private function processSection(array $json, string $vendor, string $targetVersion, string $section): array

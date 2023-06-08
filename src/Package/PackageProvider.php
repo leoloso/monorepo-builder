@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Symplify\MonorepoBuilder\Package;
 
-use Symplify\MonorepoBuilder\ComposerJsonManipulator\FileSystem\JsonFileManager;
+use Symplify\ComposerJsonManipulator\FileSystem\JsonFileManager;
 use Symplify\MonorepoBuilder\FileSystem\ComposerJsonProvider;
 use Symplify\MonorepoBuilder\ValueObject\Package;
 use Symplify\SmartFileSystem\SmartFileInfo;
@@ -33,7 +33,7 @@ final class PackageProvider
 
         usort(
             $packages,
-            static fn (Package $firstPackage, Package $secondPackage): int => $firstPackage->getShortName() <=> $secondPackage->getShortName()
+            fn (Package $firstPackage, Package $secondPackage): int => $firstPackage->getShortName() <=> $secondPackage->getShortName()
         );
 
         return $packages;

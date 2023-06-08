@@ -36,13 +36,13 @@ final class VersionFactory
     private function resolveNextVersionByVersionKind(string $versionKind): Version
     {
         // get current version
-        $mostRecentVersionString = $this->tagResolver->resolve(getcwd());
-        if ($mostRecentVersionString === null) {
+        $mostRecentVersion = $this->tagResolver->resolve(getcwd());
+        if ($mostRecentVersion === null) {
             // the very first tag
             return new Version('v0.1.0');
         }
 
-        $mostRecentVersion = new Version($mostRecentVersionString);
+        $mostRecentVersion = new Version($mostRecentVersion);
 
         $value = $mostRecentVersion->getMajor()
             ->getValue();

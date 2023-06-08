@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Symplify\MonorepoBuilder\Testing;
 
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symplify\MonorepoBuilder\ComposerJsonManipulator\FileSystem\JsonFileManager;
-use Symplify\MonorepoBuilder\ComposerJsonManipulator\ValueObject\ComposerJson;
+use Symplify\ComposerJsonManipulator\FileSystem\JsonFileManager;
+use Symplify\ComposerJsonManipulator\ValueObject\ComposerJson;
 use Symplify\MonorepoBuilder\Package\PackageNamesProvider;
 use Symplify\MonorepoBuilder\Testing\ComposerJson\ComposerJsonSymlinker;
 use Symplify\MonorepoBuilder\Testing\PackageDependency\UsedPackagesResolver;
@@ -57,7 +57,7 @@ final class ComposerJsonRepositoriesUpdater
             $symlink
         );
 
-        $newComposerJsonContents = $this->jsonFileManager->printJsonToFileInfoAndReturn(
+        $newComposerJsonContents = $this->jsonFileManager->printJsonToFileInfo(
             $decoreatedPackageComposerJson,
             $packageFileInfo
         );

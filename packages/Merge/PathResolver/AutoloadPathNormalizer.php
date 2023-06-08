@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Symplify\MonorepoBuilder\Merge\PathResolver;
 
-use Symplify\MonorepoBuilder\ComposerJsonManipulator\ValueObject\ComposerJson;
+use Symplify\ComposerJsonManipulator\ValueObject\ComposerJson;
 use Symplify\SmartFileSystem\SmartFileInfo;
 
 /**
@@ -32,8 +32,8 @@ final class AutoloadPathNormalizer
     }
 
     /**
-     * @param array<string, mixed> $autoloadArray
-     * @return array<string, mixed>
+     * @param mixed[] $autoloadArray
+     * @return mixed[]
      */
     private function normalizeAutoloadArray(SmartFileInfo $packageFile, array $autoloadArray): array
     {

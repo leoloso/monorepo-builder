@@ -2,8 +2,16 @@
 
 declare(strict_types=1);
 
-use Symplify\MonorepoBuilder\Config\MBConfig;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symplify\ComposerJsonManipulator\ValueObject\ComposerJsonSection;
+use Symplify\MonorepoBuilder\ValueObject\Option;
 
-return static function (MBConfig $mbConfig): void {
-    $mbConfig->packageDirectories([__DIR__ . '/packages']);
+return static function (ContainerConfigurator $containerConfigurator): void {
+    $parameters = $containerConfigurator->parameters();
+    // for "merge" command
+    $parameters->set(Option::DATA_TO_APPEND, [
+        ComposerJsonSection::REQUIRE_DEV => [
+            'phpunit/phpunit' => '^9.5',
+        ],
+    ]);
 };

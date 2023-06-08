@@ -3,14 +3,14 @@
     "description": "Prefixed version of Not only Composer tools to build a Monorepo.",
     "license": "MIT",
     "require": {
-        "php": ">=7.2"
+        "php": ">=7.1"
     },
     "bin": [
         "bin/monorepo-builder"
     ],
     "extra": {
         "branch-alias": {
-            "dev-main": "10.3-dev"
+            "dev-main": "9.5-dev"
         }
     }
 }

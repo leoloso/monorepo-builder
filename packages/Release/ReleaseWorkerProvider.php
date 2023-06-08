@@ -22,7 +22,14 @@ final class ReleaseWorkerProvider
     }
 
     /**
-     * @param Stage::*|string $stage
+     * @return ReleaseWorkerInterface[]
+     */
+    public function provide(): array
+    {
+        return $this->releaseWorkers;
+    }
+
+    /**
      * @return ReleaseWorkerInterface[]|StageAwareInterface[]
      */
     public function provideByStage(string $stage): array
